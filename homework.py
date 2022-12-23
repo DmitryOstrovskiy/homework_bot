@@ -29,6 +29,7 @@ HOMEWORK_VERDICTS = {
 
 logger = logging.getLogger(__name__)
 
+
 def check_tokens():
     """Проверка доступности переменных окружения."""
     tokens = [
