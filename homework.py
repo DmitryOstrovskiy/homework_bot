@@ -72,7 +72,7 @@ def get_api_answer(timestamp):
         api_answer = requests.get(
             ENDPOINT,
             headers=HEADERS,
-            params ={'from_date': timestamp})
+            params={'from_date': timestamp})
         logging.debug('Делаем запрос к API')
         if api_answer.status_code != HTTPStatus.OK:
             raise exceptions.StatusCodeNotOK(
