@@ -69,10 +69,14 @@ def send_message(bot, message):
 def get_api_answer(timestamp):
     """Делает запрос к эндпоинту API-сервиса."""
     try:
-        api_answer = requests.get(ENDPOINT, headers = HEADERS, params = {'from_date': timestamp})
+        api_answer = requests.get(
+            ENDPOINT,
+            headers = HEADERS,
+            params = {'from_date':timestamp})
         logging.debug('Делаем запрос к API')
         if api_answer.status_code != HTTPStatus.OK:
-            raise exceptions.StatusCodeNotOK('Статус запроса к эндпоинту не 200')
+            raise exceptions.StatusCodeNotOK(
+                'Статус запроса к эндпоинту не 200')
         try:
             return api_answer.json()
         except Exception as error:
