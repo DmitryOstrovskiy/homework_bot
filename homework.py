@@ -71,8 +71,8 @@ def get_api_answer(timestamp):
     try:
         api_answer = requests.get(
             ENDPOINT,
-            headers = HEADERS,
-            params = {'from_date':timestamp})
+            headers=HEADERS,
+            params ={'from_date': timestamp})
         logging.debug('Делаем запрос к API')
         if api_answer.status_code != HTTPStatus.OK:
             raise exceptions.StatusCodeNotOK(
@@ -80,7 +80,7 @@ def get_api_answer(timestamp):
         try:
             return api_answer.json()
         except Exception as error:
-            logging.error('Ответ не преобразован в json')
+            logging.error(f'Ответ не преобразован в json {error}')
     except Exception as error:
         logging.error(f'Нет доступа к эндпоинту {error}!')
         raise ValueError(f'Нет доступа к эндпоинту {error}!')
