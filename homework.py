@@ -62,7 +62,7 @@ def send_message(bot, message):
     except telegram.error.TelegramError:
         logger.error('Сбой при отправке сообщения в чат')
         raise exceptions.SendMessageError(
-                'Ошибка при отправке сообщения в чат')
+            'Ошибка при отправке сообщения в чат')
 
 
 def get_api_answer(timestamp):
@@ -78,7 +78,7 @@ def get_api_answer(timestamp):
                 'Статус запроса к эндпоинту не 200')
         return api_answer.json()
     except KeyError:
-            logging.error('Ответ не преобразован в json')
+        logging.error('Ответ не преобразован в json')
     except requests.RequestException:
         logging.error('Нет доступа к эндпоинту!')
         raise exceptions.RequestError('Ошибка доступа к эндпоинту!')
@@ -106,12 +106,12 @@ def parse_status(homework):
         homework_name = str(homework['homework_name'])
     except KeyError:
         logging.error('Нет названия домашней работы')
-        raise KeyError(f'Нет ключа "homework_name"')
+        raise KeyError('Нет ключа "homework_name"')
     try:
         homework_status = homework.get('status')
     except KeyError:
         logging.error('Нет статуса домашней работы')
-        raise KeyError(f'Нет ключа "homework_status"')
+        raise KeyError('Нет ключа "homework_status"')
     if homework_status == 'approved':
         verdict = str(HOMEWORK_VERDICTS[homework_status])
         return str(
@@ -127,8 +127,8 @@ def parse_status(homework):
         return str(
             f'Изменился статус проверки работы "{homework_name}". {verdict}'
         )
-    else: 
-        logging.error('Нет статуса домашней робаты') 
+    else:
+        logging.error('Нет статуса домашней робаты')
         raise KeyError
 
 
