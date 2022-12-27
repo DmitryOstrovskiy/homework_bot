@@ -3,6 +3,7 @@ import os
 import time
 from http import HTTPStatus
 import exceptions
+import sys
 
 import requests
 import telegram
@@ -32,11 +33,11 @@ logger = logging.getLogger(__name__)
 
 def check_tokens():
     """Проверка доступности переменных окружения."""
-    tokens = [
+    tokens = (
         'PRACTICUM_TOKEN',
         'TELEGRAM_TOKEN',
         'TELEGRAM_CHAT_ID',
-    ]
+    )
 
     if not PRACTICUM_TOKEN:
         logger.critical('Отсутствует токен: PRACTICUM')
@@ -50,10 +51,7 @@ def check_tokens():
         logger.critical('Отсутствует телеграм id')
         return False
 
-    for token in tokens:
-        if os.getenv(token) is None:
-            logger.critical(f'Отсутствует переменная: {token}')
-    return True
+    return all(tokens)
 
 
 def send_message(bot, message):
@@ -61,29 +59,29 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.debug('Бот отправил сообщение в чат')
-    except Exception as error:
-        logger.error(f'Сбой при отправке сообщения в чат - {error}')
-        raise Exception(error)
+    except telegram.error.TelegramError:
+        logger.error('Сбой при отправке сообщения в чат')
+        raise exceptions.SendMessageError(
+                'Ошибка при отправке сообщения в чат')
 
 
 def get_api_answer(timestamp):
     """Делает запрос к эндпоинту API-сервиса."""
     try:
+        logging.debug('Делаем запрос к API')
         api_answer = requests.get(
             ENDPOINT,
             headers=HEADERS,
             params={'from_date': timestamp})
-        logging.debug('Делаем запрос к API')
         if api_answer.status_code != HTTPStatus.OK:
             raise exceptions.StatusCodeNotOK(
                 'Статус запроса к эндпоинту не 200')
-        try:
-            return api_answer.json()
-        except Exception as error:
-            logging.error(f'Ответ не преобразован в json {error}')
-    except Exception as error:
-        logging.error(f'Нет доступа к эндпоинту {error}!')
-        raise ValueError(f'Нет доступа к эндпоинту {error}!')
+        return api_answer.json()
+    except KeyError:
+            logging.error('Ответ не преобразован в json')
+    except requests.RequestException:
+        logging.error('Нет доступа к эндпоинту!')
+        raise exceptions.RequestError('Ошибка доступа к эндпоинту!')
 
 
 def check_response(response):
@@ -106,12 +104,14 @@ def parse_status(homework):
     """Извлекает статус домашней работы."""
     try:
         homework_name = str(homework['homework_name'])
-    except Exception:
+    except KeyError:
         logging.error('Нет названия домашней работы')
+        raise KeyError(f'Нет ключа "homework_name"')
     try:
-        homework_status = homework['status']
-    except Exception:
+        homework_status = homework.get('status')
+    except KeyError:
         logging.error('Нет статуса домашней работы')
+        raise KeyError(f'Нет ключа "homework_status"')
     if homework_status == 'approved':
         verdict = str(HOMEWORK_VERDICTS[homework_status])
         return str(
@@ -127,8 +127,8 @@ def parse_status(homework):
         return str(
             f'Изменился статус проверки работы "{homework_name}". {verdict}'
         )
-    else:
-        logging.error('Нет статуса домашней робаты')
+    else: 
+        logging.error('Нет статуса домашней робаты') 
         raise KeyError
 
 
@@ -138,7 +138,10 @@ def main():
         format='%(asctime)s, %(levelname)s, %(message)s',
         handlers=[logging.FileHandler('log.txt')]
     )
-    if check_tokens():
+    if not check_tokens():
+        logger.critical('Отсутствует переменная окружения')
+        sys.exit()
+    else:
         bot = telegram.Bot(token=TELEGRAM_TOKEN)
         timestamp = int(time.time() - FROM_DATE)
         first_status = ''
