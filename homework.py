@@ -34,12 +34,6 @@ logger = logging.getLogger(__name__)
 
 def check_tokens():
     """Проверка доступности переменных окружения."""
-    tokens = (
-        'PRACTICUM_TOKEN',
-        'TELEGRAM_TOKEN',
-        'TELEGRAM_CHAT_ID',
-    )
-
     if not PRACTICUM_TOKEN:
         logger.critical('Отсутствует токен: PRACTICUM')
         return False
