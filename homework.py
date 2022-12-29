@@ -4,6 +4,7 @@ import time
 from http import HTTPStatus
 import exceptions
 import sys
+import json
 
 import requests
 import telegram
@@ -51,7 +52,7 @@ def check_tokens():
         logger.critical('Отсутствует телеграм id')
         return False
 
-    return all(tokens)
+    return True
 
 
 def send_message(bot, message):
@@ -77,7 +78,7 @@ def get_api_answer(timestamp):
             raise exceptions.StatusCodeNotOK(
                 'Статус запроса к эндпоинту не 200')
         return api_answer.json()
-    except KeyError:
+    except json.decoder.JSONDecodeError:
         logging.error('Ответ не преобразован в json')
     except requests.RequestException:
         logging.error('Нет доступа к эндпоинту!')
@@ -117,12 +118,7 @@ def parse_status(homework):
         return str(
             f'Изменился статус проверки работы "{homework_name}". {verdict}'
         )
-    elif homework_status == 'reviewing':
-        verdict = str(HOMEWORK_VERDICTS[homework_status])
-        return str(
-            f'Изменился статус проверки работы "{homework_name}". {verdict}'
-        )
-    elif homework_status == 'rejected':
+    elif homework_status == 'reviewing' or homework_status == 'rejected':
         verdict = str(HOMEWORK_VERDICTS[homework_status])
         return str(
             f'Изменился статус проверки работы "{homework_name}". {verdict}'
@@ -139,7 +135,6 @@ def main():
         handlers=[logging.FileHandler('log.txt')]
     )
     if not check_tokens():
-        logger.critical('Отсутствует переменная окружения')
         sys.exit()
     else:
         bot = telegram.Bot(token=TELEGRAM_TOKEN)
