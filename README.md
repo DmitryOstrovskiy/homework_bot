@@ -18,7 +18,7 @@ Telegram-бота, который обращается к API сервиса П�
 
 ```python3 -m venv env```
 
-```source venv/Scripts/activate```
+Windows: ```source venv\scripts\activate```; Linux/Mac: ```sorce venv/bin/activate```
 
 - Установить зависимости из файла requirements.txt:
 
